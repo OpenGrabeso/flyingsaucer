@@ -205,11 +205,24 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         if (!Configuration.isTrue("xr.renderer.draw.backgrounds", true)) {
             return;
         }
-        
+
         setOpacity(style.getOpacity());
-        
+
         FSColor backgroundColor = style.getBackgroundColor();
-        FSImage backgroundImage = getBackgroundImage(c, style);
+
+        FSLinearGradient backgroundLinearGradient = null;
+        FSImage backgroundImage = null;
+        
+        if (style.isLinearGradient())
+        {
+        	// TODO: Is this the correct width to use?
+        	backgroundLinearGradient = style.getLinearGradient(c, bgImageContainer.width);
+
+        }
+        else
+        {
+        	backgroundImage = getBackgroundImage(c, style);
+        }
 
         // If the image width or height is zero, then there's nothing to draw.
         // Also prevents infinte loop when trying to tile an image with zero size.
@@ -218,10 +231,10 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         }
 
         if ( (backgroundColor == null || backgroundColor == FSRGBColor.TRANSPARENT) &&
-                backgroundImage == null) {
+                backgroundImage == null && backgroundLinearGradient == null) {
             return;
         }
-        
+
         Area borderBounds = new Area(BorderPainter.generateBorderBounds(backgroundBounds, border, false));
 
         Shape oldclip = getClip();
@@ -235,9 +248,8 @@ public abstract class AbstractOutputDevice implements OutputDevice {
             fill(borderBounds);
         }
 
-        if (backgroundImage != null) {
+        if (backgroundImage != null || backgroundLinearGradient != null) {
             setClip(borderBounds);
-
             Rectangle localBGImageContainer = bgImageContainer;
             if (style.isFixedBackground()) {
                 localBGImageContainer = c.getViewportRectangle();
@@ -251,7 +263,22 @@ public abstract class AbstractOutputDevice implements OutputDevice {
                 yoff += (int)border.top();
             }
 
-            scaleBackgroundImage(c, style, localBGImageContainer, backgroundImage);
+            Shape oldclipX = getClip(); // TODO: proper merge
+
+            clip(borderBounds);
+
+        	if (backgroundLinearGradient != null)
+        	{
+        		drawLinearGradient(backgroundLinearGradient,
+        		backgroundBounds.x, backgroundBounds.y, backgroundBounds.width, backgroundBounds.height);
+        		setClip(oldclipX);
+        		return;
+        	}
+
+            if (backgroundImage != null)
+            {
+            	scaleBackgroundImage(c, style, localBGImageContainer, backgroundImage);
+            }
 
             float imageWidth = backgroundImage.getWidth();
             float imageHeight = backgroundImage.getHeight();
@@ -267,8 +294,9 @@ public abstract class AbstractOutputDevice implements OutputDevice {
 
             if (! hrepeat && ! vrepeat) {
                 Rectangle imageBounds = new Rectangle(xoff, yoff, (int)imageWidth, (int)imageHeight);
-                if (imageBounds.intersects(backgroundBounds)) {
-                    drawImage(backgroundImage, xoff, yoff);
+                if (imageBounds.intersects(backgroundBounds))
+                {
+               		drawImage(backgroundImage, xoff, yoff);
                 }
             } else if (hrepeat && vrepeat) {
                 paintTiles(
