@@ -469,6 +469,16 @@ public class RootPanel extends JPanel implements Scrollable, UserInterface, FSCa
         return e == hovered_element;
     }
 
+
+    /** this function can be used when custom (e.g. realtime) repaint is necessary */
+    public boolean changeHoveredElement(org.w3c.dom.Element e) {
+        if (hovered_element != e) {
+            hovered_element = e;
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public boolean isActive(org.w3c.dom.Element e) {
         return e == active_element;
