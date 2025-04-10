@@ -19,8 +19,7 @@
  */
 package org.xhtmlrenderer.render;
 
-import java.awt.Rectangle;
-import java.awt.Shape;
+import java.awt.*;
 import java.awt.geom.Area;
 import java.util.Iterator;
 import java.util.List;
@@ -249,6 +248,11 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         }
 
         if (backgroundImage != null || backgroundLinearGradient != null) {
+            if (backgroundColor != FSRGBColor.TRANSPARENT) {
+                setColor(backgroundColor);
+            } else {
+                setColor(new FSRGBColor(0xffffff));
+            }
             setClip(borderBounds);
             Rectangle localBGImageContainer = bgImageContainer;
             if (style.isFixedBackground()) {

@@ -290,6 +290,11 @@ public class Java2DOutputDevice extends AbstractOutputDevice implements OutputDe
     }
 
     public void drawImage(FSImage image, int x, int y) {
+        // check color and opacity - use modifier if necessary
+        Color c = _graphics.getColor();
+        float opacity = _graphics.get
+
+
         _graphics.drawImage(((AWTFSImage)image).getImage(), x, y, null);
     }
 
