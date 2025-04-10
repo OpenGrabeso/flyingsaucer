@@ -58,7 +58,7 @@ public class HoverListener extends DefaultFSMouseListener {
 
         Element currentlyHovered = getHoveredElement(c.getCss(), box);
 
-        if (currentlyHovered == panel.hovered_element) {
+        if (!panel.changeHoveredElement(currentlyHovered)) {
             return;
         }
 
