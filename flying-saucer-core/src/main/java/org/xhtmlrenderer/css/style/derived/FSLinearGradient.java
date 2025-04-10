@@ -198,21 +198,25 @@ public class FSLinearGradient
 		return;
 	}
 
+    private static final String RCSS_NUMBER = "(-)?((\\d){1,10}((\\.)(\\d){1,10})?)";
+    private static final String RCSS_LENGTH = "((0$)|((" + RCSS_NUMBER + ")+" + "((em)|(ex)|(px)|(cm)|(mm)|(in)|(pt)|(pc)|(%))))";
+    private static final Pattern CSS_LENGTH_PATTERN = Pattern.compile(RCSS_LENGTH);
     public static boolean looksLikeALength(String val) {
-        String RCSS_NUMBER = "(-)?((\\d){1,10}((\\.)(\\d){1,10})?)";
-        String RCSS_LENGTH = "((0$)|((" + RCSS_NUMBER + ")+" + "((em)|(ex)|(px)|(cm)|(mm)|(in)|(pt)|(pc)|(%))))";
-        var CSS_LENGTH_PATTERN = Pattern.compile(RCSS_LENGTH);
         return CSS_LENGTH_PATTERN.matcher(val).matches();
     }
 
+    private static ArrayList<String> BACKGROUND_POSITIONS_IDENTS = new ArrayList<>();
 
-    public static boolean looksLikeABGPosition(String val) {
-        var BACKGROUND_POSITIONS_IDENTS = new ArrayList<String>();
+    static {
         BACKGROUND_POSITIONS_IDENTS.add("top");
         BACKGROUND_POSITIONS_IDENTS.add("center");
         BACKGROUND_POSITIONS_IDENTS.add("bottom");
         BACKGROUND_POSITIONS_IDENTS.add("right");
         BACKGROUND_POSITIONS_IDENTS.add("left");
+    }
+
+
+    public static boolean looksLikeABGPosition(String val) {
         return BACKGROUND_POSITIONS_IDENTS.contains(val) || looksLikeALength(val);
     }
 
