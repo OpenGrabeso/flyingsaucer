@@ -12,7 +12,7 @@
   </parent>
 
   <artifactId>flying-saucer-pdf-osgi</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <name>Flying Saucer PDF Rendering (OSGi bundle)</name>
   <description>This artifacts rebundles the flying-saucer-pdf artifact to make it available in OSGi context.</description>
 
@@ -29,24 +29,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.2.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>org.xhtmlrenderer.flying.saucer.pdf.osgi</Bundle-SymbolicName>
-            <Bundle-Version>${project.version}</Bundle-Version>
-            <!-- This bundle re-bundles the original flying-saucer-pdf artifact
-              and only needs to import packages from flying-saucer-core. -->
-            <Import-Package>org.xhtmlrenderer.*</Import-Package>
-            <!-- Do not export package org.xhtmlrenderer.simple as it is
-              already exported by flying-saucer-core and this would lead to a split package
-              without correctly marking it as such. -->
-            <Export-Package>!org.xhtmlrenderer.simple,org.xhtmlrenderer.*</Export-Package>
-            <Embed-Dependency>*;scope=compile|runtime;artifactId=!flying-saucer-core</Embed-Dependency>
-            <Embed-Directory>.</Embed-Directory>
-            <Embed-Transitive>true</Embed-Transitive>
-          </instructions>
-        </configuration>
       </plugin>
     </plugins>
   </build>
