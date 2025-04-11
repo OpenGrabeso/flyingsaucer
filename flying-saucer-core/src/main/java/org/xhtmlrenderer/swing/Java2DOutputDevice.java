@@ -19,19 +19,12 @@
  */
 package org.xhtmlrenderer.swing;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.LinearGradientPaint;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.Stroke;
-import java.awt.AlphaComposite;
+import java.awt.*;
 import java.awt.RenderingHints.Key;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.util.Arrays;
 import java.util.logging.Level;
 
@@ -290,7 +283,21 @@ public class Java2DOutputDevice extends AbstractOutputDevice implements OutputDe
     }
 
     public void drawImage(FSImage image, int x, int y) {
-        _graphics.drawImage(((AWTFSImage)image).getImage(), x, y, null);
+        // set modulation depending on color and opacity
+        Color color = _graphics.getColor();
+        BufferedImage img = ((AWTFSImage) image).getImage();
+        if (color.equals(Color.white)) {
+            // current composite is fine
+            _graphics.drawImage(img, x, y, null);
+        } else {
+            var r = color.getRed() / 255.0f;
+            var g = color.getGreen() / 255.0f;
+            var b = color.getBlue() / 255.0f;
+            float[] scaleFactors = new float[] { r, g, b }; // color modulation
+            float[] offsets = new float[] { 0, 0, 0 };
+            RescaleOp op = new RescaleOp(scaleFactors, offsets, null);
+            _graphics.drawImage(img, op, x, y);
+        }
     }
 
     public boolean isSupportsSelection() {
