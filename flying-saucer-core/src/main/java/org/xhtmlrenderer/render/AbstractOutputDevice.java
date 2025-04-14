@@ -170,11 +170,11 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         BorderPainter.paint(edge, sides, style.getBorder(c), c, 0, true);
     }
 
-    private FSImage getBackgroundImage(RenderingContext c, CalculatedStyle style) {
+    private String getBackgroundImage(RenderingContext c, CalculatedStyle style) {
     	if (! style.isIdent(CSSName.BACKGROUND_IMAGE, IdentValue.NONE)) {
             String uri = style.getStringProperty(CSSName.BACKGROUND_IMAGE);
             try {
-                return c.getUac().getImageResource(uri).getImage();
+                return uri;
             } catch (Exception ex) {
                 Uu.p(ex);
             }
@@ -211,6 +211,7 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         FSColor backgroundColor = style.getBackgroundColor();
 
         FSLinearGradient backgroundLinearGradient = null;
+        String backgroundImageUri = null;
         FSImage backgroundImage = null;
 
         if (style.isLinearGradient())
@@ -220,7 +221,12 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         }
         else
         {
-        	backgroundImage = getBackgroundImage(c, style);
+            backgroundImageUri = getBackgroundImage(c, style);
+            try {
+                backgroundImage = c.getUac().getImageResource(backgroundImageUri).getImage();
+            } catch (Exception ex) {
+                Uu.p(ex);
+            }
         }
 
         // If the image width or height is zero, then there's nothing to draw.
@@ -276,7 +282,7 @@ public abstract class AbstractOutputDevice implements OutputDevice {
 
             if (backgroundImage != null)
             {
-            	scaleBackgroundImage(c, style, localBGImageContainer, backgroundImage);
+                backgroundImage = scaleBackgroundImage(c, style, localBGImageContainer, backgroundImage, backgroundImageUri);
             }
 
             float imageWidth = backgroundImage.getWidth();
@@ -390,7 +396,7 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         }
     }
 
-    private void scaleBackgroundImage(CssContext c, CalculatedStyle style, Rectangle backgroundContainer, FSImage image) {
+    private FSImage scaleBackgroundImage(RenderingContext c, CalculatedStyle style, Rectangle backgroundContainer, FSImage image, String imageURI) {
         BackgroundSize backgroundSize = style.getBackgroundSize();
 
         if (! backgroundSize.isBothAuto()) {
@@ -398,23 +404,25 @@ public abstract class AbstractOutputDevice implements OutputDevice {
                 int testHeight = (int)((double)image.getHeight() * backgroundContainer.width / image.getWidth());
                 if (backgroundSize.isContain()) {
                     if (testHeight > backgroundContainer.height) {
-                        image.scale(-1, backgroundContainer.height);
+                        return c.getUac().getImageResource(imageURI, -1, backgroundContainer.height).getImage();
                     } else {
-                        image.scale(backgroundContainer.width, -1);
+                        return c.getUac().getImageResource(imageURI, backgroundContainer.width, -1).getImage();
                     }
-                } else if (backgroundSize.isCover()) {
+                } else /*if (backgroundSize.isCover())*/ {
                     if (testHeight > backgroundContainer.height) {
-                        image.scale(backgroundContainer.width, -1);
+                        return c.getUac().getImageResource(imageURI, backgroundContainer.width, -1).getImage();
                     } else {
-                        image.scale(-1, backgroundContainer.height);
+                        return c.getUac().getImageResource(imageURI, -1, backgroundContainer.height).getImage();
                     }
                 }
             } else {
                 int scaledWidth = calcBackgroundSizeLength(c, style, backgroundSize.getWidth(), backgroundContainer.width);
                 int scaledHeight = calcBackgroundSizeLength(c, style, backgroundSize.getHeight(), backgroundContainer.height);
 
-                image.scale(scaledWidth, scaledHeight);
+                return c.getUac().getImageResource(imageURI, scaledWidth, scaledHeight).getImage();
             }
+        } else {
+            return image;
         }
     }
 

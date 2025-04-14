@@ -65,6 +65,12 @@ public interface UserAgentCallback {
     ImageResource getImageResource(String uri);
 
     /**
+     * @param width resize to given width. When <0, resize based on height so that aspect is preserved
+     * @param height resize to given height. When <0, resize based on width so that aspect is preserved
+     * */
+    ImageResource getImageResource(String uri, int width, int height);
+
+    /**
      * Retrieves the XML at the given URI. This is a synchronous call.
      *
      * @param uri Location of the XML

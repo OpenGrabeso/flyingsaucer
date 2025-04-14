@@ -265,6 +265,17 @@ public class NaiveUserAgent implements UserAgentCallback, DocumentListener {
         return ir;
     }
 
+    public ImageResource getImageResource(String uri, int width, int height) {
+        var base = getImageResource(uri);
+        var baseImage = base.getImage();
+        var dim = ImageResourceLoader.imageDimension(baseImage, width, height);
+        if (dim.width !=  baseImage.getWidth() || dim.height != baseImage.getHeight()) {
+            var scaledImage = ImageUtil.getScaledInstance((BufferedImage)baseImage, width, height);
+            return createImageResource(uri, scaledImage);
+        } else return base;
+    }
+
+
     /**
      * Factory method to generate ImageResources from a given Image. May be overridden in subclass. 
      *

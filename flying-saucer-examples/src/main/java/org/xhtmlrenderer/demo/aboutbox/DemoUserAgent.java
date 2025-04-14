@@ -39,6 +39,8 @@ import org.xhtmlrenderer.resource.CSSResource;
 import org.xhtmlrenderer.resource.ImageResource;
 import org.xhtmlrenderer.resource.XMLResource;
 import org.xhtmlrenderer.swing.AWTFSImage;
+import org.xhtmlrenderer.swing.ImageResourceLoader;
+import org.xhtmlrenderer.util.ImageUtil;
 import org.xhtmlrenderer.util.Uu;
 import org.xhtmlrenderer.util.XRLog;
 
@@ -110,7 +112,17 @@ public class DemoUserAgent implements UserAgentCallback {
         if (ir == null) ir = new ImageResource(uri, null);
         return ir;
     }
-    
+
+    public ImageResource getImageResource(String uri, int width, int height) {
+        var base = getImageResource(uri);
+        var baseImage = base.getImage();
+        var dim = ImageResourceLoader.imageDimension(baseImage, width, height);
+        if (dim.width !=  baseImage.getWidth() || dim.height != baseImage.getHeight()) {
+            var scaledImage = ImageUtil.getScaledInstance((BufferedImage)baseImage, width, height);
+            return new ImageResource(uri, AWTFSImage.createImage(scaledImage));
+        } else return base;
+    }
+
     public byte[] getBinaryResource(String uri) {
         InputStream is = null;
         try {

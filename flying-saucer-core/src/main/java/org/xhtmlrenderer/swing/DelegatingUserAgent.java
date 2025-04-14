@@ -115,6 +115,10 @@ public class DelegatingUserAgent implements UserAgentCallback, DocumentListener 
         return _imageResourceLoader.get(resolveURI(uri));
     }
 
+    public ImageResource getImageResource(String uri, int width, int height) {
+        return _imageResourceLoader.get(resolveURI(uri), width, height);
+    }
+
     /**
      * Retrieves the XML located at the given URI. It's assumed the URI does point to a XML--the URI will
      * be accessed (using java.io or java.net), opened, read and then passed into the XML parser (XMLReader)

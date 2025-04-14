@@ -19,6 +19,7 @@
  */
 package org.xhtmlrenderer.swt;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -34,6 +35,7 @@ import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.resource.CSSResource;
 import org.xhtmlrenderer.resource.ImageResource;
 import org.xhtmlrenderer.resource.XMLResource;
+import org.xhtmlrenderer.swing.ImageResourceLoader;
 import org.xhtmlrenderer.util.ImageUtil;
 import org.xhtmlrenderer.util.XRLog;
 
@@ -129,7 +131,16 @@ public class NaiveUserAgent implements UserAgentCallback {
         }
         return ir;
     }
-    
+
+    public ImageResource getImageResource(String uri, int width, int height) {
+        var base = getImageResource(uri);
+        var baseImage = base.getImage();
+        var dim = ImageResourceLoader.imageDimension(baseImage, width, height);
+        if (dim.width !=  baseImage.getWidth() || dim.height != baseImage.getHeight()) {
+            throw new UnsupportedOperationException("Resizing not implemented for SWT images");
+        } else return base;
+    }
+
     /**
      * Factory method to generate ImageResources from a given Image. May be
      * overridden in subclass.

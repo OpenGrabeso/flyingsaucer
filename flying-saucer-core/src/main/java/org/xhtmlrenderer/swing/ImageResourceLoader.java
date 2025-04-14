@@ -1,5 +1,6 @@
 package org.xhtmlrenderer.swing;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -125,6 +126,18 @@ public class ImageResourceLoader {
         return get(uri, -1, -1);
     }
 
+    public static Dimension imageDimension(final FSImage base, final int width, final int height) {
+        if (width >= 0 && height >= 0) {
+            return new Dimension(width, height);
+        } else if (width >= 0) {
+            return new Dimension(width, (int)(base.getHeight() * (double)width / base.getWidth()));
+        } else if (height >= 0) {
+            return new Dimension((int)(base.getWidth() * (double)height / base.getHeight()), height);
+        } else {
+            return new Dimension(base.getWidth(), base.getHeight());
+        }
+    }
+
     public synchronized ImageResource get(final String uri, final int width, final int height) {
         if (ImageUtil.isEmbeddedBase64Image(uri)) {
             ImageResource resource = loadEmbeddedBase64ImageResource(uri);
@@ -147,11 +160,13 @@ public class ImageResourceLoader {
                         FSImage awtfsImage = ir.getImage();
                         BufferedImage newImg = ((AWTFSImage) awtfsImage).getImage();
                         loaded(ir, -1, -1);
-                        if (width > -1 && height > -1) {
-                            XRLog.load(Level.FINE, this + ", scaling " + uri + " to " + width + ", " + height);
-                            newImg = ImageUtil.getScaledInstance(newImg, width, height);
+
+                        var dim = imageDimension(awtfsImage, width, height);
+                        if (dim.width !=  awtfsImage.getWidth() || dim.height != awtfsImage.getHeight()) {
+                            XRLog.load(Level.FINE, this + ", scaling " + uri + " to " + dim.width + ", " + dim.height);
+                            newImg = ImageUtil.getScaledInstance(newImg, dim.width, dim.height);
                             ir = new ImageResource(ir.getImageUri(), AWTFSImage.createImage(newImg));
-                            loaded(ir, width, height);
+                            loaded(ir, newImg.getWidth(), newImg.getHeight());
                         }
                     } else {
                         XRLog.load(Level.FINE, "Image cache miss, URI not yet loaded, queueing: " + uri);
@@ -167,9 +182,12 @@ public class ImageResourceLoader {
                     FSImage awtfsImage = ir.getImage();
                     BufferedImage newImg = ((AWTFSImage) awtfsImage).getImage();
 
-                    newImg = ImageUtil.getScaledInstance(newImg, width, height);
-                    ir = new ImageResource(ir.getImageUri(), AWTFSImage.createImage(newImg));
-                    loaded(ir, width, height);
+                    var dim = imageDimension(awtfsImage, width, height);
+                    if (dim.width !=  awtfsImage.getWidth() || dim.height != awtfsImage.getHeight()) {
+                        newImg = ImageUtil.getScaledInstance(newImg, dim.width, dim.height);
+                        ir = new ImageResource(ir.getImageUri(), AWTFSImage.createImage(newImg));
+                        loaded(ir, newImg.getWidth(), newImg.getHeight());
+                    }
                 }
             }
             return ir;
