@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">-->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style type="text/css">
+        
+    #title1, #title2, #title3 { font-family: Georgia,sans-serif; }
+    #title1 {
+        font-size: 75pt;
+        color: #B0CDF8;
+        }
+    #title2, #title3 { font-size: 40pt; }
+    #content {
+        margin-left: 20px;
+        margin-right: 20px;
+        border: 0px solid black;
+        }
+    #content h3 { font-size: 20pt; font-family: Arial,sans-serif; padding: 20px; }
+    p, li { font-family: Verdana,sans-serif; font-size: 14pt; margin: 5px 2px 5px 2px;}
+    /*    ul { background-color: #DFE9F8; 
+        border-width: 1px; 
+        border-color: #83B2F8; }
+        */
+    .centered { text-align: center; }
+
+    .background {
+        background-image: url("flyingsaucer.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        border-color: #000099;
+        border-style: dotted;
+        border-width: 1px;
+        font-size: 25pt;
+        width: 30%;
+    }
+    .simple {
+    }
+    .cover {
+        background-size: cover;
+    }
+    .contain {
+        background-size: contain;
+    }
+    .colored {
+        background-size: contain;
+        background-color: #c0ffc0;
+        background-blend-mode: multiply;
+    }
+    .repeat {
+        background-size: contain;
+        background-color: #c040c0;
+        background-blend-mode: multiply;
+        background-repeat: repeat;
+    }
+
+    body {
+        }
+    
+    img { border-width: 0px; }
+    
+    p {
+        border: 1px solid black;
+        background-image: url("transgrey.png");
+        padding: 20px;
+        }
+    </style>
+    
+</head>
+
+<body>
+    <div id="content">
+      <h1>Images demo</h1>
+      <h2>Normal images</h2>
+        <div class="centered">
+            <p class="centered" id="imgback">
+                <img alt="" src="flyingsaucer.png"/>
+            </p>
+        </div>
+
+      <h2>Background images</h2>
+
+      <div class="simple background">Simple background image<br/>over a few text lines</div>
+      <div class="cover background">Cover background image<br/>over a few text lines</div>
+      <div class="contain background">Contain background image<br/>over a few text lines</div>
+      <div class="colored background">Colored background image<br/>over a few text lines</div>
+      <div class="repeat background">Repeated colored background image<br/>over a few text lines</div>
+
+    </div>
+</body>
+</html>
