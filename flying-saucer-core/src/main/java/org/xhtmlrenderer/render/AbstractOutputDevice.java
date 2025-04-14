@@ -223,7 +223,7 @@ public abstract class AbstractOutputDevice implements OutputDevice {
         {
             backgroundImageUri = getBackgroundImage(c, style);
             try {
-                backgroundImage = c.getUac().getImageResource(backgroundImageUri).getImage();
+                if (backgroundImageUri != null) backgroundImage = c.getUac().getImageResource(backgroundImageUri).getImage();
             } catch (Exception ex) {
                 Uu.p(ex);
             }
