@@ -52,7 +52,7 @@ public abstract class AbstractOutputDevice implements OutputDevice {
     private FontSpecification _fontSpec;
 
     protected abstract void drawLine(int x1, int y1, int x2, int y2);
-    
+
     public void drawText(RenderingContext c, InlineText inlineText) {
         InlineLayoutBox iB = inlineText.getParent();
         String text = inlineText.getSubstring();
@@ -247,10 +247,12 @@ public abstract class AbstractOutputDevice implements OutputDevice {
             // we need to respect the clip sent to us, get the intersection between the old and the new
         	borderBounds.intersect(new Area(oldclip));
         }
-        
+
         if (backgroundColor != null && backgroundColor != FSRGBColor.TRANSPARENT) {
             setColor(backgroundColor);
-            fill(borderBounds);
+            if (backgroundImage == null && backgroundLinearGradient == null) {
+                fill(borderBounds);
+            }
         } else {
             setColor(new FSRGBColor(0xffffff));
         }
