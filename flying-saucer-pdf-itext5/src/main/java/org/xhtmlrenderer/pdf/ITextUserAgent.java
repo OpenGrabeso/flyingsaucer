@@ -64,71 +64,10 @@ public class ITextUserAgent extends NaiveUserAgent {
 
     public ImageResource getImageResource(String uriStr) {
         ImageResource resource;
-        if (!ImageUtil.isEmbeddedBase64Image(uriStr)) {
-            uriStr = resolveURI(uriStr);
-        }
-        resource = (ImageResource) _imageCache.get(uriStr);
-
-        if (resource == null) {
-            if (ImageUtil.isEmbeddedBase64Image(uriStr)) {
-                resource = loadEmbeddedBase64ImageResource(uriStr);
-                _imageCache.put(uriStr, resource);
-            } else {
-                InputStream is = resolveAndOpenStream(uriStr);
-                if (is != null) {
-                    try {
-                        ContentTypeDetectingInputStreamWrapper cis=new ContentTypeDetectingInputStreamWrapper(is);
-                        is=cis;
-                        if (cis.isPdf()) {
-                            URI uri = new URI(uriStr);
-                            PdfReader reader = _outputDevice.getReader(uri);
-                            PDFAsImage image = new PDFAsImage(uri);
-                            Rectangle rect = reader.getPageSizeWithRotation(PDFAsImage.pageNumberFromURI(uri));
-                            image.setInitialWidth(rect.getWidth() * _outputDevice.getDotsPerPoint());
-                            image.setInitialHeight(rect.getHeight() * _outputDevice.getDotsPerPoint());
-                            resource = new ImageResource(uriStr, image);
-                        } else {
-                            Image image = Image.getInstance(readStream(is));
-                            scaleToOutputResolution(image);
-                            resource = new ImageResource(uriStr, new ITextFSImage(image));
-                        }
-                        _imageCache.put(uriStr, resource);
-                    } catch (Exception e) {
-                        XRLog.exception("Can't read image file; unexpected problem for URI '" + uriStr + "'", e);
-                    } finally {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                }
-            }
-        }
-        if (resource != null) {
-            FSImage image = resource.getImage();
-            if (image instanceof ITextFSImage) {
-                image = (FSImage) ((ITextFSImage) resource.getImage()).clone();
-            }
-            resource = new ImageResource(resource.getImageUri(), image);
-        } else {
-            resource = new ImageResource(uriStr, null);
-        }
+        resource = loader.get(uriStr);
         return resource;
     }
     
-    private ImageResource loadEmbeddedBase64ImageResource(final String uri) {
-        try {
-            byte[] buffer = ImageUtil.getEmbeddedBase64Image(uri);
-            Image image = Image.getInstance(buffer);
-            scaleToOutputResolution(image);
-            return new ImageResource(null, new ITextFSImage(image));
-        } catch (Exception e) {
-            XRLog.exception("Can't read XHTML embedded image.", e);
-        }
-        return new ImageResource(null, null);
-    }
-
     private void scaleToOutputResolution(Image image) {
         float factor = _sharedContext.getDotsPerPixel();
         if (factor != 1.0f) {

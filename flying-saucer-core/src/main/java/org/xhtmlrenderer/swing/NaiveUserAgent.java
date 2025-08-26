@@ -68,8 +68,7 @@ public class NaiveUserAgent implements UserAgentCallback, DocumentListener {
     /**
      * a (simple) LRU cache
      */
-    protected LinkedHashMap _imageCache;
-    private int _imageCacheCapacity;
+    protected ImageResourceLoader loader;
     private String _baseURL;
 
     /**
@@ -85,11 +84,7 @@ public class NaiveUserAgent implements UserAgentCallback, DocumentListener {
      * @param imgCacheSize Number of images to hold in cache before LRU images are released.
      */
     public NaiveUserAgent(final int imgCacheSize) {
-        this._imageCacheCapacity = imgCacheSize;
-
-        // note we do *not* override removeEldestEntry() here--users of this class must call shrinkImageCache().
-        // that's because we don't know when is a good time to flush the cache
-        this._imageCache = new java.util.LinkedHashMap(_imageCacheCapacity, 0.75f, true);
+          loader = new ImageResourceLoader(imgCacheSize);
     }
 
     /**
@@ -97,19 +92,13 @@ public class NaiveUserAgent implements UserAgentCallback, DocumentListener {
      * be dropped from cache until it reaches the desired size.
      */
     public void shrinkImageCache() {
-        int ovr = _imageCache.size() - _imageCacheCapacity;
-        Iterator it = _imageCache.keySet().iterator();
-        while (it.hasNext() && ovr-- > 0) {
-            it.next();
-            it.remove();
-        }
     }
 
     /**
      * Empties the image cache entirely.
      */
     public void clearImageCache() {
-        _imageCache.clear();
+        loader.clear();
     }
 
     /**
@@ -227,52 +216,11 @@ public class NaiveUserAgent implements UserAgentCallback, DocumentListener {
      * @return An ImageResource containing the image.
      */
     public ImageResource getImageResource(String uri) {
-        ImageResource ir;
-        if (ImageUtil.isEmbeddedBase64Image(uri)) {
-            BufferedImage image = ImageUtil.loadEmbeddedBase64Image(uri);
-            ir = createImageResource(null, image);
-        } else {
-            uri = resolveURI(uri);
-            ir = (ImageResource) _imageCache.get(uri);
-            //TODO: check that cached image is still valid
-            if (ir == null) {
-                InputStream is = resolveAndOpenStream(uri);
-                if (is != null) {
-                    try {
-                        BufferedImage img = ImageIO.read(is);
-                        if (img == null) {
-                            throw new IOException("ImageIO.read() returned null");
-                        }
-                        ir = createImageResource(uri, img);
-                        _imageCache.put(uri, ir);
-                    } catch (FileNotFoundException e) {
-                        XRLog.exception("Can't read image file; image at URI '" + uri + "' not found");
-                    } catch (IOException e) {
-                        XRLog.exception("Can't read image file; unexpected problem for URI '" + uri + "'", e);
-                    } finally {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                }
-            }
-            if (ir == null) {
-                ir = createImageResource(uri, null);
-            }
-        }
-        return ir;
+        return loader.get(uri);
     }
 
     public ImageResource getImageResource(String uri, int width, int height) {
-        var base = getImageResource(uri);
-        var baseImage = base.getImage();
-        var dim = ImageResourceLoader.imageDimension(baseImage, width, height);
-        if (dim.width !=  baseImage.getWidth() || dim.height != baseImage.getHeight()) {
-            var scaledImage = ImageUtil.getScaledInstance((BufferedImage)baseImage, width, height);
-            return createImageResource(uri, scaledImage);
-        } else return base;
+        return loader.get(uri, width, height);
     }
 
 

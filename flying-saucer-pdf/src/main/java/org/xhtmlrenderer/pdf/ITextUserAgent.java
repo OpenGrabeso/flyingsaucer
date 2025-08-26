@@ -66,53 +66,8 @@ public class ITextUserAgent extends NaiveUserAgent {
         if (!ImageUtil.isEmbeddedBase64Image(uriStr)) {
             uriStr = resolveURI(uriStr);
         }
-        resource = (ImageResource) _imageCache.get(uriStr);
+        resource = (ImageResource) loader.get(uriStr);
 
-        if (resource == null) {
-            if (ImageUtil.isEmbeddedBase64Image(uriStr)) {
-                resource = loadEmbeddedBase64ImageResource(uriStr);
-                _imageCache.put(uriStr, resource);
-            } else {
-                InputStream is = resolveAndOpenStream(uriStr);
-                if (is != null) {
-                    try {
-                        ContentTypeDetectingInputStreamWrapper cis=new ContentTypeDetectingInputStreamWrapper(is);
-                        is=cis;
-                        if (cis.isPdf()) {
-                            URI uri = new URI(uriStr);
-                            PdfReader reader = _outputDevice.getReader(uri);
-                            PDFAsImage image = new PDFAsImage(uri);
-                            Rectangle rect = reader.getPageSizeWithRotation(1);
-                            image.setInitialWidth(rect.getWidth() * _outputDevice.getDotsPerPoint());
-                            image.setInitialHeight(rect.getHeight() * _outputDevice.getDotsPerPoint());
-                            resource = new ImageResource(uriStr, image);
-                        } else {
-                            Image image = Image.getInstance(readStream(is));
-                            scaleToOutputResolution(image);
-                            resource = new ImageResource(uriStr, new ITextFSImage(image));
-                        }
-                        _imageCache.put(uriStr, resource);
-                    } catch (Exception e) {
-                        XRLog.exception("Can't read image file; unexpected problem for URI '" + uriStr + "'", e);
-                    } finally {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                }
-            }
-        }
-        if (resource != null) {
-            FSImage image = resource.getImage();
-            if (image instanceof ITextFSImage) {
-                image = (FSImage) ((ITextFSImage) resource.getImage()).clone();
-            }
-            resource = new ImageResource(resource.getImageUri(), image);
-        } else {
-            resource = new ImageResource(uriStr, null);
-        }
         return resource;
     }
     
